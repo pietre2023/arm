@@ -45,7 +45,7 @@ sleep 1
 
 
 ##kernel legacy##
-echo "kernel" 
-sleep 2
-echo "kernel Sunxi 3.4"
-git clone -b sunxi-3.4 https://github.com/linux-sunxi/linux-sunxi.git sunxi/kernel/3-4/linux-sunxi
+#echo "kernel" 
+#sleep 2
+#echo "kernel Sunxi 3.4"
+#git clone -b sunxi-3.4 https://github.com/linux-sunxi/linux-sunxi.git sunxi/kernel/3-4/linux-sunxi
