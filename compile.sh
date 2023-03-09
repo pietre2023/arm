@@ -40,8 +40,8 @@ sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
 clear
 echo "Compilación de u-boot terminada"
 sleep 1
-
-
+echo "Para instalar uboot en una micro-SD:"
+echo "dd if=u-boot-sunxi-with-spl.bin of=tutarjetasd bs=1024 seek=8"
 
 
 ##kernel legacy##
