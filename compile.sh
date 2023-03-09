@@ -35,8 +35,8 @@ case $uboot in
 6) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- iNet_3W_defconfig;;
 7) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- iNet_86VS_defconfig;;
 8) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- iNet_D978_rev2_defconfig;;
-9) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- inet1_defconfig
-10 sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- pinetab_defconfig
+9) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- inet1_defconfig;;
+10 sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- pinetab_defconfig;;
 
 *) echo "$opc no es una opcion válida.";
 echo "Presiona una tecla para continuar...";
