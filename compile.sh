@@ -1,4 +1,8 @@
 #!/bin/bash
+# variables
+arm=ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+arm64=ARCH=ARM64 CROSS_COMPILE=aarch64-linux-gnu-
+
 sudo apt install -y swig python-dev gcc-arm-linux-gnueabihf bison flex make python3-setuptools libssl-dev u-boot-tools device-tree-compiler
 git clone git://git.denx.de/u-boot.git
 cd u-boot
@@ -28,25 +32,23 @@ echo -n "	Seleccione una opcion [1 - 8]"
 read uboot
 case $uboot in
 1) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- q8_a13_tablet_defconfig;;
-2) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- q8_a23_tablet_800x480_defconfig;;
-3) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- q8_a33_tablet_1024x600_defconfig;;
-4) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- q8_a33_tablet_800x480_defconfig;;
-5) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- iNet_3F_defconfig ;;
-6) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- iNet_3W_defconfig;;
-7) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- iNet_86VS_defconfig;;
-8) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- iNet_D978_rev2_defconfig;;
-9) sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- inet1_defconfig;;
-10 sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- pinetab_defconfig;;
-
+2) sudo make -j$(nproc) $arm q8_a23_tablet_800x480_defconfig;;
+3) sudo make -j$(nproc) $arm q8_a33_tablet_1024x600_defconfig;;
+4) sudo make -j$(nproc) $arm q8_a33_tablet_800x480_defconfig;;
+5) sudo make -j$(nproc) $arm iNet_3F_defconfig ;;
+6) sudo make -j$(nproc) $arm iNet_3W_defconfig;;
+7) sudo make -j$(nproc) $arm iNet_86VS_defconfig;;
+8) sudo make -j$(nproc) $arm iNet_D978_rev2_defconfig;;
+9) sudo make -j$(nproc) $arm inet1_defconfig;;
+10) sudo make -j$(nproc) $arm64 pinetab_defconfig;;
 *) echo "$opc no es una opcion válida.";
 echo "Presiona una tecla para continuar...";
-read foo;;
+read foo;
 esac
 sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
 clear
 echo "Compilación de u-boot terminada"
 sleep 1
-cd u-boot/
 echo "Para instalar uboot en una micro-SD:"
 echo "dd if=u-boot-sunxi-with-spl.bin of=tutarjetasd bs=1024 seek=8"
 
