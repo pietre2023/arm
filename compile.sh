@@ -83,7 +83,7 @@ echo "Compilación de u-boot terminada"
 sleep 1
 echo "Para instalar uboot en una micro-SD:"
 echo "dd if=u-boot-sunxi-with-spl.bin of=tutarjetasd bs=1024 seek=8"
-
+general
 }
 kernel() {
         wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.2.9.tar.xz
