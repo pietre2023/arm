@@ -77,6 +77,7 @@ echo "Presiona una tecla para continuar...";
 read foo;
 esac
 sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+cd ..
 clear
 echo "Compilación de u-boot terminada"
 sleep 1
@@ -87,6 +88,7 @@ echo "dd if=u-boot-sunxi-with-spl.bin of=tutarjetasd bs=1024 seek=8"
 kernel() {
         wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.2.9.tar.xz
         tar -Jxvf linux-6.2.9.tar.xz
+        general
 }
         general
 
