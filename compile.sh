@@ -34,6 +34,7 @@ esac
 clear
 uboot(){
         git clone git://git.denx.de/u-boot.git
+        cd u-boot
         clear
         echo "Menu de compilación del u-boot para tablets"
         echo "Elija una opción para compilación del u-boot según su modelo de tablet"
