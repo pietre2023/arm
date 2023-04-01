@@ -5,7 +5,7 @@ arm64=ARCH=ARM64 CROSS_COMPILE=aarch64-linux-gnu-
 make="sudo make -j$(nproc)"
 
 dependencias() {
-apt install -y swig python-dev gcc-arm-linux-gnueabihf bison flex make python3-setuptools libssl-dev u-boot-tools device-tree-compiler
+apt install -y swig python-dev gcc-arm-linux-gnueabihf bison flex make python3-setuptools libssl-dev u-boot-tools device-tree-compiler gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 }
 clear
 general(){
@@ -26,6 +26,7 @@ case $menu in
         1) dependencias;;
         2) uboot;;
         3) kernel;;
+        4) rootfs;;
         *) echo "$opc no es una opcion válida.";
 echo "Presiona una tecla para continuar...";
 read foo;
@@ -90,11 +91,32 @@ kernel() {
         tar -Jxvf linux-6.2.9.tar.xz
         general
 }
-        general
+rootfs() {
+	rm -R system
+	mkdir system
+	echo " Menu para creación del sistema de archivos"
+	echo "1.        xenial "
+    echo ""
+    echo "2.        Bionic "
+    echo ""
+    echo "3.        focal"
+	read rootfs
+	case $rootfs in
+	1) debootstrap --foreign xenial system;;
+	2) debootstrap --foreign bionic system;;
+	3) debootstrap --foreign focal system;;
+*) echo "$opc no es una opcion válida.";
+echo "Presiona una tecla para continuar...";
+read foo;
+esac
+general
+}
 
+general
 
 ##kernel legacy##
 #echo "kernel"
 #sleep 2
 #echo "kernel Sunxi 3.4"
 #git clone -b sunxi-3.4 https://github.com/linux-sunxi/linux-sunxi.git sunxi/kernel/3-4/linux-sunxi
+
