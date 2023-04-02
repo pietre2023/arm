@@ -5,7 +5,11 @@ arm64=ARCH=ARM64 CROSS_COMPILE=aarch64-linux-gnu-
 make="sudo make -j$(nproc)"
 
 dependencias() {
-apt install -y swig python-dev gcc-arm-linux-gnueabihf bison flex make python3-setuptools libssl-dev u-boot-tools device-tree-compiler gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+	apt install -y swig python-dev gcc-arm-linux-gnueabihf bison flex make python3-setuptools libssl-dev u-boot-tools device-tree-compiler gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+	clear
+	echo " Completado"
+	general
+	
 }
 clear
 general(){
@@ -86,11 +90,13 @@ echo "Para instalar uboot en una micro-SD:"
 echo "dd if=u-boot-sunxi-with-spl.bin of=tutarjetasd bs=1024 seek=8"
 general
 }
+clear
 kernel() {
         wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.2.9.tar.xz
         tar -Jxvf linux-6.2.9.tar.xz
         general
 }
+clear
 rootfs() {
 	rm -R system
 	mkdir system
@@ -111,7 +117,7 @@ read foo;
 esac
 general
 }
-
+clear
 general
 
 ##kernel legacy##
