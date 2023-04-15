@@ -3,9 +3,58 @@
 arm=ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
 arm64=ARCH=ARM64 CROSS_COMPILE=aarch64-linux-gnu-
 make="sudo make -j$(nproc)"
-
+montar() {
+	sudo mount -o bind /dev /system/dev && sudo mount -o bind /dev/pts /system/dev/pts && sudo mount -t sysfs sys /system/sys && sudo mount -t proc proc /system/proc
+}
+debootstrap-second-stage() {
+	cp /usr/bin/qemu-arm-static /system/usr/bin
+	> config.sh
+	cat <<+ >> config.sh
+	#!/bin/sh
+echo " Configurando debootstrap segunda fase"
+sleep 3
+/debootstrap/debootstrap --second-stage
+export LANG=C
+echo "nameserver 8.8.8.8" > /etc/resolv.conf
+echo "Europe/Berlin" > /etc/timezone
+echo "system" >> /etc/hostname
+echo "127.0.0.1 system localhost
+::1 ip6-localhost ip6-loopback
+fe00::0 ip6-localnet
+ff00::0 ip6-mcastprefix
+ff02::1 ip6-allnodes
+ff02::2 ip6-allrouters
+ff02::2 ip6-allrouters
+ff02::3 ip6-allhosts" >> /etc/hosts
+echo "auto lo
+iface lo inet loopback" >> /etc/network/interfaces
+echo "/dev/mmcblk0p1 /	   ext4	    errors=remount-ro,noatime,nodiratime 0 1" >> /etc/fstab
+echo "tmpfs    /tmp        tmpfs    nodev,nosuid,mode=1777 0 0" >> /etc/fstab
+echo "tmpfs    /var/tmp    tmpfs    defaults    0 0" >> /etc/fstab	
+apt-get update
+echo "Reconfigurando parametros locales"
+locale-gen es_ES.UTF-8
+export LC_ALL="es_ES.UTF-8"
+update-locale LC_ALL=es_ES.UTF-8 LANG=es_ES.UTF-8 LC_MESSAGES=POSIX
+dpkg-reconfigure locales
+dpkg-reconfigure -f noninteractive tzdata
+apt-get upgrade -y 
+hostnamectl set-hostname system
+apt-get clean
+adduser system
+addgroup system sudo
+addgroup system adm
+addgroup system users
+echo "Sistema Instalado"
+sudo umount /system/dev/pts /system/dev/ /system/proc /system/sys /system
+exit
++
+chmod +x  config.sh
+sudo cp config.sh /system/home
+chroot /system /usr/bin/qemu-arm-static /bin/sh -i ./home/config.sh
+}
 dependencias() {
-	apt install -y swig python-dev python3-dev gcc-arm-linux-gnueabihf bison flex make python3-setuptools libssl-dev u-boot-tools device-tree-compiler gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+	apt install -y swig python-dev python3-dev gcc-arm-linux-gnueabihf bison flex make python3-setuptools libssl-dev u-boot-tools device-tree-compiler gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu btrfs-tools qemu-user-static
 	clear
 	echo " Completado"
 	general
@@ -17,20 +66,22 @@ echo "      Que desea hacer hoy "
 sleep 1
 echo " Elija una opción "
 sleep 1
-echo "1.        Instalar dependencias RECOMENDADO "
+echo "1.	Instalar dependencias RECOMENDADO "
 echo""
-echo "2.        Compilar u-boot "
+echo "2.	Compilar u-boot "
 echo ""
-echo "3.        Compilar kernel"
+echo "3.	Compilar kernel"
 echo ""
-echo "4.        Crear rootFS"
+echo "4.	Crear rootFS"
 echo ""
+echo "5.	Salir"
 read menu
 case $menu in
         1) dependencias;;
         2) uboot;;
         3) kernel;;
         4) rootfs;;
+        5) exit;;
         *) echo "$opc no es una opcion válida.";
 echo "Presiona una tecla para continuar...";
 read foo;
@@ -64,6 +115,7 @@ uboot(){
         echo "9.        Tablet inet_1"
         echo ""
         echo "10.       Pinetab"
+        echo ""
         echo -n "       Seleccione una opcion [1 - 10]"
         read uboot
         case $uboot in
@@ -86,11 +138,23 @@ sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
 cd ..
 mkdir out
 cp u-boot/u-boot-sunxi-with-spl.bin  out/
+> out/boot.cmd
+cat <<+ >> out/boot.cmd
+setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p1 rootwait panic=10
+load mmc 0:1 0x43000000 sun8i-a33-q8-tablet.dtb || load mmc 0:1 0x43000000 boot/sun8i-a33-q8-tablet.dtb
+load mmc 0:1 0x42000000 zImage || load mmc 0:1 0x42000000 boot/zImage
+bootz 0x42000000 - 0x43000000
++
+mkimage -C none -A arm -T script -d out/boot.cmd out/boot.scr
+clear
 echo "Compilación de u-boot terminada"
 sleep 1
 echo "Para instalar uboot en una micro-SD:"
 echo "dd if=u-boot-sunxi-with-spl.bin of=tutarjetasd bs=1024 seek=8"
+sleep 1
+echo " Copie el archivo boot.scr en la carpeta /boot de destino"
 general
+
 }
 clear
 kernel() {
@@ -102,9 +166,21 @@ kernel() {
         make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- sunxi_defconfig
         make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage dtbs
         ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=modules make modules modules_install
-        
+        cp -R modules/lib out
+        cp arch/arm/boot/zImage out
+        clear
+        echo "Compilación del kernel terminada"
+        general
 }
 clear
+rootfs-image() {
+	mkdir /system
+	dd if=/dev/zero of=system.img bs=1 count=0 seek=4000M
+	mkfs.btrfs system.img
+	chmod 777 system.img
+	mount -o loop system.img /system
+	
+}
 rootfs() {
 	rm -R system
 	mkdir system
@@ -125,17 +201,18 @@ rootfs() {
     echo "7.	Debian Bullseye"
 	read rootfs
 	case $rootfs in
-	1) debootstrap --foreign xenial system;;
-	2) debootstrap --foreign bionic system;;
-	3) debootstrap --foreign focal system;;
-	4) debootstrap --foreign jammy system;;
-	5) debootstrap --foreign stretch system;;
-	6) debootstrap --foreign buster system;;
-	7) debootstrap --foreign bullseye system;;
+	1) rootfs-image; debootstrap --arch=armhf --foreign xenial /system; montar; debootstrap-second-stage;;
+	2) rootfs-image; debootstrap --arch=armhf --foreign bionic /system; montar; debootstrap-second-stage;;
+	3) rootfs-image; debootstrap --arch=armhf --foreign focal /system; montar; debootstrap-second-stage;;
+	4) rootfs-image; debootstrap --arch=armhf --foreign jammy /system; montar; debootstrap-second-stage;;
+	5) rootfs-image; debootstrap --arch=armhf --foreign stretch /system; montar; debootstrap-second-stage;;
+	6) rootfs-image; debootstrap --arch=armhf --foreign buster /system; montar; debootstrap-second-stage;;
+	7) rootfs-image; debootstrap --arch=armhf --foreign bullseye /system; montar; debootstrap-second-stage;;
 *) echo "$opc no es una opcion válida.";
 echo "Presiona una tecla para continuar...";
 read foo;
 esac
+
 general
 }
 clear
