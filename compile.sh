@@ -96,6 +96,10 @@ clear
 kernel() {
         wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.2.9.tar.xz
         tar -Jxvf linux-6.2.9.tar.xz
+        cd linux-6.2.9
+        make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- sunxi_defconfig
+        make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage dtbs
+        ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH= make modules modules_install
         
 }
 clear
@@ -140,4 +144,3 @@ general
 #sleep 2
 #echo "kernel Sunxi 3.4"
 #git clone -b sunxi-3.4 https://github.com/linux-sunxi/linux-sunxi.git sunxi/kernel/3-4/linux-sunxi
-
