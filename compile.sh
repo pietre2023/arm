@@ -102,17 +102,30 @@ clear
 rootfs() {
 	rm -R system
 	mkdir system
-	echo " Menu para creación del sistema de archivos"
-	echo "1.        xenial "
+	echo " Menu para creación del sistema Operativo"
+	echo ""
+	echo "1.	Ubuntu 16 Xenial Xerus"
     echo ""
-    echo "2.        Bionic "
+    echo "2.	Ubuntu 18 Bionic Beaver"
     echo ""
-    echo "3.        focal"
+    echo "3.	Ubuntu 20 Focal Fosa"
+    echo ""	
+    echo "4.	Ubuntu 22 Jammy Jellyfish"
+    echo ""
+    echo "5.	Debian stretch"
+    echo ""
+    echo "6.	Debian Buster"
+    echo ""
+    echo "7.	Debian Bullseye"
 	read rootfs
 	case $rootfs in
 	1) debootstrap --foreign xenial system;;
 	2) debootstrap --foreign bionic system;;
 	3) debootstrap --foreign focal system;;
+	4) debootstrap --foreign jammy system;;
+	5) debootstrap --foreign stretch system;;
+	6) debootstrap --foreign buster system;;
+	7) debootstrap --foreign bullseye system;;
 *) echo "$opc no es una opcion válida.";
 echo "Presiona una tecla para continuar...";
 read foo;
@@ -127,5 +140,4 @@ general
 #sleep 2
 #echo "kernel Sunxi 3.4"
 #git clone -b sunxi-3.4 https://github.com/linux-sunxi/linux-sunxi.git sunxi/kernel/3-4/linux-sunxi
-
 
