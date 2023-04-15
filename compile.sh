@@ -5,7 +5,7 @@ arm64=ARCH=ARM64 CROSS_COMPILE=aarch64-linux-gnu-
 make="sudo make -j$(nproc)"
 
 dependencias() {
-	apt install -y swig python-dev gcc-arm-linux-gnueabihf bison flex make python3-setuptools libssl-dev u-boot-tools device-tree-compiler gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
+	apt install -y swig python-dev python3-dev gcc-arm-linux-gnueabihf bison flex make python3-setuptools libssl-dev u-boot-tools device-tree-compiler gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu
 	clear
 	echo " Completado"
 	general
@@ -40,7 +40,8 @@ clear
 uboot(){
         git clone git://git.denx.de/u-boot.git
         cd u-boot
-        clear
+        make mrproper
+        make clean
         echo "Menu de compilación del u-boot para tablets"
         echo "Elija una opción para compilación del u-boot según su modelo de tablet"
         sleep 2
@@ -83,7 +84,8 @@ read foo;
 esac
 sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
 cd ..
-clear
+mkdir out
+cp u-boot/u-boot-sunxi-with-spl.bin  out/
 echo "Compilación de u-boot terminada"
 sleep 1
 echo "Para instalar uboot en una micro-SD:"
@@ -94,7 +96,7 @@ clear
 kernel() {
         wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.2.9.tar.xz
         tar -Jxvf linux-6.2.9.tar.xz
-        general
+        
 }
 clear
 rootfs() {
@@ -125,4 +127,5 @@ general
 #sleep 2
 #echo "kernel Sunxi 3.4"
 #git clone -b sunxi-3.4 https://github.com/linux-sunxi/linux-sunxi.git sunxi/kernel/3-4/linux-sunxi
+
 
