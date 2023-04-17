@@ -222,6 +222,8 @@ echo "Presiona una tecla para continuar...";
 read foo;
 esac
 cp /tmp/ramdisk/system.img out
+umount /system/dev/pts /system/dev /system/proc /system/sys /system
+sync
 general
 }
 clear
