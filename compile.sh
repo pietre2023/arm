@@ -46,12 +46,13 @@ addgroup system sudo
 addgroup system adm
 addgroup system users
 echo "Sistema Instalado"
-sudo umount /system/dev/pts /system/dev/ /system/proc /system/sys /system
 exit
 +
 chmod +x  config.sh
 sudo cp config.sh /system/home
 chroot /system /usr/bin/qemu-arm-static /bin/sh -i ./home/config.sh
+cp out/zImage /system/boot
+
 }
 dependencias() {
 	apt install -y swig python-dev python3-dev gcc-arm-linux-gnueabihf bison flex make python3-setuptools libssl-dev u-boot-tools device-tree-compiler gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu btrfs-tools qemu-user-static
@@ -62,9 +63,9 @@ dependencias() {
 }
 clear
 general(){
-echo "      Que desea hacer hoy "
+echo "		Que desea hacer hoy "
 sleep 1
-echo " Elija una opción "
+echo "		Elija una opción "
 sleep 1
 echo "1.	Instalar dependencias RECOMENDADO "
 echo""
@@ -120,7 +121,7 @@ uboot(){
         read uboot
         case $uboot in
 
-1) $make $arm q8_a13_tablet_defconfig;;
+1) dtb=sun8i-a33-q8-tablet.dtb; $make $arm q8_a13_tablet_defconfig;;
 2) $make $arm q8_a23_tablet_800x480_defconfig;;
 3) $make $arm q8_a33_tablet_1024x600_defconfig;;
 4) $make $arm q8_a33_tablet_800x480_defconfig;;
@@ -134,7 +135,7 @@ uboot(){
 echo "Presiona una tecla para continuar...";
 read foo;
 esac
-sudo make -j$(nproc) ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-
+sudo make -j$(nproc) $arm
 cd ..
 mkdir out
 cp u-boot/u-boot-sunxi-with-spl.bin  out/
@@ -163,56 +164,64 @@ kernel() {
         cd linux-6.2.9
         make mrproper
         make clean
-        make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- sunxi_defconfig
-        make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- zImage dtbs
-        ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- INSTALL_MOD_PATH=modules make modules modules_install
-        cp -R modules/lib out
-        cp arch/arm/boot/zImage out
+        make $arm sunxi_defconfig
+        make $arm zImage dtbs
+        $arm INSTALL_MOD_PATH=modules make modules modules_install
+        cd ..
+        cp -R linux-6.2.9/modules/lib out
+        cp linux-6.2.9/arch/arm/boot/zImage out
+        cp  /arch/arm/boot/$dtb /system/boot
         clear
         echo "Compilación del kernel terminada"
         general
+        cp linux-6.2.9/arch/arm/boot/dts/sun8i-a33-q8-tablet.dtb out/
 }
 clear
 rootfs-image() {
+	mkdir /tmp/ramdisk
+	mount -t tmpfs none /tmp/ramdisk -o size=1024M
 	mkdir /system
-	dd if=/dev/zero of=system.img bs=1 count=0 seek=4000M
-	mkfs.btrfs system.img
-	chmod 777 system.img
-	mount -o loop system.img /system
+	dd if=/dev/zero of=/tmp/ramdisk/system.img bs=1 count=0 seek=800M
+	mkfs.ext4 /tmp/ramdisk/system.img
+	chmod 777 /tmp/ramdisk/system.img
+	mount -o loop /tmp/ramdisk/system.img /system
 	
 }
 rootfs() {
-	rm -R system
+	rm -R /system
 	mkdir system
 	echo " Menu para creación del sistema Operativo"
 	echo ""
-	echo "1.	Ubuntu 16 Xenial Xerus"
+    echo "1.	Ubuntu 22 Jammy Jellyfish"
     echo ""
-    echo "2.	Ubuntu 18 Bionic Beaver"
+    echo "2.	Ubuntu 20 Focal Fosa"
     echo ""
-    echo "3.	Ubuntu 20 Focal Fosa"
+    echo "3.	Ubuntu 18 Bionic Beaver"
     echo ""	
-    echo "4.	Ubuntu 22 Jammy Jellyfish"
+   	echo "4.	Ubuntu 16 Xenial Xerus"
     echo ""
-    echo "5.	Debian stretch"
+   	echo "5.	Ubuntu 14 Trusty Thar"
     echo ""
-    echo "6.	Debian Buster"
+    echo "6.	Debian Bullseye"
     echo ""
-    echo "7.	Debian Bullseye"
+    echo "7.	Debian Buster"
+    echo ""
+    echo "8.	Debian stretch"
 	read rootfs
 	case $rootfs in
-	1) rootfs-image; debootstrap --arch=armhf --foreign xenial /system; montar; debootstrap-second-stage;;
-	2) rootfs-image; debootstrap --arch=armhf --foreign bionic /system; montar; debootstrap-second-stage;;
-	3) rootfs-image; debootstrap --arch=armhf --foreign focal /system; montar; debootstrap-second-stage;;
-	4) rootfs-image; debootstrap --arch=armhf --foreign jammy /system; montar; debootstrap-second-stage;;
-	5) rootfs-image; debootstrap --arch=armhf --foreign stretch /system; montar; debootstrap-second-stage;;
-	6) rootfs-image; debootstrap --arch=armhf --foreign buster /system; montar; debootstrap-second-stage;;
-	7) rootfs-image; debootstrap --arch=armhf --foreign bullseye /system; montar; debootstrap-second-stage;;
+	1) rootfs-image; debootstrap --arch=armhf --foreign jammy /system; montar; debootstrap-second-stage;;
+	2) rootfs-image; debootstrap --arch=armhf --foreign focal /system; montar; debootstrap-second-stage;;
+	3) rootfs-image; debootstrap --arch=armhf --foreign bionic /system; montar; debootstrap-second-stage;;
+	4) rootfs-image; debootstrap --arch=armhf --foreign xenial /system; montar; debootstrap-second-stage;;
+	5) rootfs-image; debootstrap --arch=armhf --foreign trusty /system; montar; debootstrap-second-stage;;
+	6) rootfs-image; debootstrap --arch=armhf --foreign bullseye /system; montar; debootstrap-second-stage;;
+	7) rootfs-image; debootstrap --arch=armhf --foreign buster  /system; montar; debootstrap-second-stage;;
+	8) rootfs-image; debootstrap --arch=armhf --foreign stretch /system; montar; debootstrap-second-stage;;
 *) echo "$opc no es una opcion válida.";
 echo "Presiona una tecla para continuar...";
 read foo;
 esac
-
+cp /tmp/ramdisk/system.img out
 general
 }
 clear
