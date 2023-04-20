@@ -55,7 +55,7 @@ cp out/zImage /system/boot
 
 }
 dependencias() {
-	apt install -y swig python-dev python3-dev gcc-arm-linux-gnueabihf bison flex make python3-setuptools libssl-dev u-boot-tools device-tree-compiler gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu btrfs-tools qemu-user-static
+	apt install -y swig python2-dev python3-dev gcc-arm-linux-gnueabihf bison flex make python3-setuptools libssl-dev u-boot-tools device-tree-compiler gcc-aarch64-linux-gnu binutils-aarch64-linux-gnu qemu-user-static
 	clear
 	echo " Completado"
 	general
